@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday, Teacher!</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            /* Classroom/apple inspired color palette */
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Card designed to look like a clean, modern mini-chalkboard/bulletin board */
+        .card {
+            background: #ffffff;
+            padding: 35px;
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+            width: 90%;
+            max-width: 480px;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+            border: 4px solid #4caf50; /* Apple green border */
+            display: none; /* Kept hidden until password is correct */
+        }
+
+        /* Top visual anchors/decorations */
+        .decorations {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            color: #2e7d32;
+            margin-bottom: 20px;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        p {
+            color: #455a64;
+            font-size: 18px;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .options-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            margin: 12px 0;
+            border: 2px solid #cfd8dc;
+            background: #fafafa;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #37474f;
+            transition: all 0.2s ease;
+            text-align: left;
+            padding-left: 20px;
+        }
+
+        .options-btn:hover {
+            background: #f1f8e9;
+            border-color: #81c784;
+            transform: translateY(-2px);
+        }
+
+        .options-btn.correct {
+            background: #e8f5e9;
+            border-color: #4caf50;
+            color: #1b5e20;
+        }
+
+        .options-btn.wrong {
+            background: #ffebee;
+            border-color: #ef5350;
+            color: #c62828;
+            animation: shake 0.3s ease;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Final Birthday Greeting UI */
+        .wish-screen h1 {
+            font-size: 32px;
+            color: #d32f2f;
+            margin-bottom: 15px;
+            animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .wish-screen .sub-wish {
+            font-size: 16px;
+            color: #546e7a;
+            font-style: italic;
+        }
+
+        /* Dynamic Classroom Confetti */
+        .confetti {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            opacity: 0.85;
+            top: -10px;
+            border-radius: 3px;
+            animation: fall 3.5s linear infinite;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(105vh) rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Quiz Card Container -->
+    <div class="card" id="quiz-card">
+        <div id="quiz-screen">
+            <div class="decorations">📚 ✏️ 🍎</div>
+            <h2 id="question-number">Loading...</h2>
+            <p id="question-text">Preparing your pop quiz...</p>
+            <div id="options-container">
+                <!-- JavaScript handles buttons dynamically here -->
+            </div>
+        </div>
+
+        <!-- Hidden Wish Screen (Revealed upon passing quiz) -->
+        <div id="wish-screen" class="hidden wish-screen">
+            <div class="decorations">🎉 🎂 🎁 🎉</div>
+            <h1>Happy Birthday, Teacher!</h1>
+            <p><strong>A+ Status Achieved!</strong> 💯</p>
+            <p>Thank you for your infinite patience, guidance, and wisdom. We hope your day off from grading is filled with relaxation and joy!</p>
+            <p class="sub-wish">From your favorite students ⭐</p>
+        </div>
+    </div>
+
+    <script>
+        // Set your custom password here
+        const ACCESS_PASSWORD = "teacher123";
+
+        // Teacher-themed questions mapped inside an object array
+        const quizData = [
+            {
+                question: "What is the absolute best gift a student can give you today?",
+                options: [
+                    "A perfectly sharpened shiny pencil", 
+                    "Total silence and perfect behavior for the whole period", 
+                    "An Apple that actually grants superpowers", 
+                    "A 500-page notebook to grade"
+                ],
+                correct: 1 // Index 1 represents perfect classroom silence
+            },
+            {
+                question: "What is the ultimate superpower of an amazing teacher?",
+                options: [
+                    "Having eyes in the back of your head", 
+                    "Reading minds during an exam", 
+                    "Surviving entirely on cold coffee", 
+                    "All of the above!"
+                ],
+                correct: 3 // 'All of the above'
+            },
+            {
+                question: "What is the official rule for your birthday today?",
+                options: [
+                    "Double homework assignments for everyone", 
+                    "No pop quizzes, no grading, just fun! ✨", 
+                    "Arriving 30 minutes early to school", 
+                    "Reading the dictionary out loud"
+                ],
+                correct: 1 // No pop quizzes
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+
+        const questionNumberEl = document.getElementById("question-number");
+        const questionTextEl = document.getElementById("question-text");
+        const optionsContainerEl = document.getElementById("options-container");
+        const quizScreenEl = document.getElementById("quiz-screen");
+        const wishScreenEl = document.getElementById("wish-screen");
+        const cardEl = document.getElementById("quiz-card");
+
+        // Secure password system check
+        function checkPassword() {
+            // Keep card invisible initially
+            cardEl.style.display = "none"; 
+            
+            const userInput = prompt("Please enter the password to open your birthday surprise:");
+            
+            if (userInput === ACCESS_PASSWORD) {
+                cardEl.style.display = "block"; // Unlock and reveal the quiz card layout
+                loadQuestion();
+            } else if (userInput === null) {
+                // If they hit cancel
+                document.body.innerHTML = "<h2 style='color:#c62828; text-align:center;'>Access denied. Refresh the page to try again.</h2>";
+            } else {
+                alert("Incorrect password!");
+                checkPassword(); // Loop back until correct
+            }
+        }
+
+        function loadQuestion() {
+            const currentQuiz = quizData[currentQuestionIndex];
+            
+            questionNumberEl.innerText = `Classroom Quiz: Question ${currentQuestionIndex + 1} of ${quizData.length}`;
+            questionTextEl.innerText = currentQuiz.question;
+            optionsContainerEl.innerHTML = "";
+            
+            currentQuiz.options.forEach((option, index) => {
+                const button = document.createElement("button");
+                button.classList.add("options-btn");
+                button.innerText = option;
+                button.addEventListener("click", () => handleAnswer(index, button));
+                optionsContainerEl.appendChild(button);
+            });
+        }
+
+        function handleAnswer(selectedIndex, selectedButton) {
+            const correctIndex = quizData[currentQuestionIndex].correct;
+            const buttons = optionsContainerEl.querySelectorAll(".options-btn");
+            
+            // Lock inputs to prevent accidental spam triggers
+            buttons.forEach(btn => btn.disabled = true);
+
+            if (selectedIndex === correctIndex) {
+                selectedButton.classList.add("correct");
+                
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    if (currentQuestionIndex < quizData.length) {
+                        loadQuestion();
+                    } else {
+                        showBirthdayWish();
+                    }
+                }, 1000);
+            } else {
+                selectedButton.classList.add("wrong");
+                // Allow another try on a bad guess
+                setTimeout(() => {
+                    buttons.forEach(btn => {
+                        btn.disabled = false;
+                        btn.classList.remove("wrong");
+                    });
+                }, 800);
+            }
+        }
+
+        function showBirthdayWish() {
+            quizScreenEl.classList.add("hidden");
+            wishScreenEl.classList.remove("hidden");
+            startClassroomCelebration();
+        }
+
+        // Falling confetti using teacher-friendly bright tones
+        function startClassroomCelebration() {
+            const brightColors = ['#4caf50', '#f44336', '#2196f3', '#ffeb3b', '#ff9800'];
+            for (let i = 0; i < 65; i++) {
